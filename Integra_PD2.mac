@@ -1,0 +1,193 @@
+/*************************************************************/
+/*     Integra Postprozessor Code                            */
+/*                                                           */
+/*     Erzeugt Ausgabe Pick&Place Textfile                   */
+/*                                                           */
+/*     Autor: Andreas Schreiber                              */
+/*     Date: 29.09.2011                                      */
+/*************************************************************/
+
+/***   Deklarationen  ***/
+real x, y, xsmd, ysmd, xtht, ytht, r;
+real spacer;
+real punktwahl;
+string REV_Nr;
+string ListenName;
+string side;
+string parttype;
+string errMessage;
+output liste;
+
+REV_Nr  = get_project_attr("REVNR-SP");
+ListenName = #.job_name# + ".BD." + REV_Nr;
+set_output_filename(liste, ListenName);
+set_output_fileextension(liste, "txt");
+
+out liste, "Pick&Place-File: ", #.job_name#, ".", REV_Nr, "  ", #.date#, "  yourcompany", "  Variante: ", #.current_variant#, "\n";
+out liste, "RefDes     X          Y          Rot.       Part      Pin-Count Side\n";
+
+        loop (SHAPES "Form" SORT "din")
+          if (#typ# == "BOHR_DK_ANSCHLUSS") continue; end /* Überspringe Volltyp-Bohrungen */
+          if (#:IFAX-NUMMER# == "LAY") continue; end      /* Überspringe Layouttypen*/
+          /* (wenn voller Typ und kein TP) oder Pseudobauteil dann Loop */
+          if ((#component_typ# == "1" && #class_name# != "TP") || #component_typ#=="4")
+                loop (POINTS ON "Form")
+                  if (#point_typ# == "3")     /* SMD-Mittelpunkt */
+                        if (ator(#point_size_x#) > 0 && ator(#point_size_y#) > 0)
+                              punktwahl = 3;
+                        end;
+                        xsmd=ator(#point_pos_x#);
+                        ysmd=ator(#point_pos_y#);
+                  end;
+                  if (#point_typ# == "2")     /* Mittelpunkt (THT) */
+                        if (ator(#point_size_x#) > 0 && ator(#point_size_y#) > 0)
+                              punktwahl = 2;
+                        end;
+                        xtht=ator(#point_pos_x#);
+                        ytht=ator(#point_pos_y#);
+                  end;
+                end;
+/* Erste Wahl SMD-Mittelpunkt, dann Mittelpunkt, zuletzt Nullpunkt. */
+                if (punktwahl == 3)
+                      x=xsmd;
+                      y=ysmd;
+                      parttype = "SMD  ";
+                else
+                      x=ator(#part_pos_x#);
+                      y=ator(#part_pos_y#);
+                      parttype = "NOSMD";
+                end;
+                if (punktwahl == 2)
+                      x=xtht;
+                      y=ytht;
+                end;
+                punktwahl = 0;
+                r=ator(#part_angle#);
+                if (#part_side#=="1")
+                      side = "Top";
+                end;
+                if (#part_side#=="0")
+                      side = "Bottom";
+                end;
+                if (#part_side#=="-1")
+                      side = "NOT PLACED!";
+                      errMessage="Achtung! Es sind noch unplatzierte Bauteile vorhanden!";
+                end;
+                /* unrunde Werte sind wegen Rundungsfehler bei Integraausgabe */
+                if (x >= 0 && x < 9.999)
+                      spacer = 7;
+                end;
+                if (x >= 9.999 && x < 99.999)
+                      spacer = 6;
+                end;
+                if (x >= 99.999 && x < 999.999)
+                      spacer = 5;
+                end;
+                if (x >= 999.999 && x < 9999.999)
+                      spacer = 4;
+                end;
+                if (x >= 9999.999 && x < 99999.999)
+                      spacer = 3;
+                end;
+                if (x >= 99999.999 && x < 999999.999)
+                      spacer = 2;
+                end;
+                if (x >= 999999.999 && x < 9999999.999)
+                      spacer = 1;
+                      errMessage="Achtung! Pos. X-Koordinaten ausserhalb des Bereiches!";
+                end;
+                if (x > -9.999 && x < 0)
+                      spacer = 6;
+                end;
+                if (x > -99.999 && x <= -9.999)
+                      spacer = 5;
+                end;
+                if (x > -999.999 && x <= -99.999)
+                      spacer = 4;
+                end;
+                if (x > -9999.999 && x <= -999.999)
+                      spacer = 3;
+                end;
+                if (x > -99999.999 && x <= -9999.999)
+                      spacer = 2;
+                end;
+                if (x > -999999.999 && x <= -99999.999)
+                      spacer = 1;
+                      errMessage="Achtung! Neg. X-Koordinaten ausserhalb des Bereiches!";
+                end;
+                out liste, (c11l) #din#, (r0.2) x;
+                do
+                  out liste, " ";
+                  spacer -= 1;
+                while (spacer > 0);
+                out liste, (r0.2) y;
+                if (y >= 0 && y < 9.999)
+                      spacer = 7;
+                end;
+                if (y >= 9.999 && y < 99.999)
+                      spacer = 6;
+                end;
+                if (y >= 99.999 && y < 999.999)
+                      spacer = 5;
+                end;
+                if (y >= 999.999 && y < 9999.999)
+                      spacer = 4;
+                end;
+                if (y >= 9999.999 && y < 99999.999)
+                      spacer = 3;
+                end;
+                if (y >= 99999.999 && y < 999999.999)
+                      spacer = 2;
+                end;
+                if (y >= 999999.999 && y < 9999999.999)
+                      spacer = 1;
+                      errMessage="Achtung! Pos. Y-Koordinaten ausserhalb des Bereiches!";
+                end;
+                if (y > -9.99 && y < 0)
+                      spacer = 6;
+                end;
+                if (y > -99.999 && y <= -9.99)
+                      spacer = 5;
+                end;
+                if (y > -999.999 && y <= -99.999)
+                      spacer = 4;
+                end;
+                if (y > -9999.999 && y <= -999.999)
+                      spacer = 3;
+                end;
+                if (y > -99999.999 && y <= -9999.999)
+                      spacer = 2;
+                end;
+                if (y > -999999.999 && y <= -99999.999)
+                      spacer = 1;
+                      errMessage="Achtung! Neg. Y-Koordinaten ausserhalb des Bereiches!";
+                end;
+                do
+                  out liste, " ";
+                  spacer -= 1;
+                while (spacer > 0);
+                out liste, (r0) r;
+                if (r < 10)
+                      spacer = 10;
+                end;
+                if (r >= 10 && r < 100)
+                      spacer = 9;
+                end;
+                if (r >=100 && r < 1000)
+                      spacer = 8;
+                end;
+                do
+                  out liste, " ";
+                  spacer -= 1;
+                while (spacer > 0);
+                out liste, (c10l) parttype, (c10l) #pin_count#, (c30l) side, "\n";
+                x = 0;
+                y = 0;
+          end;
+        end;
+ListenName = get_output_filename(liste);
+printnl "Ausgabe wurde unter ", ListenName, " gespeichert.";
+    if (errMessage != "")
+        msg("Warning",errMessage);
+    end;
+view(liste);
