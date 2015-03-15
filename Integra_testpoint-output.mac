@@ -1,0 +1,24 @@
+/***************************************/
+/* Name:  Testpunktkoordinatenausgabe   /
+/* Autor: A. Schreiber                  /
+/* Date:  12.10.2004                    /
+/***************************************/
+
+output o;
+
+
+set_output_fileextension (o, "tp0");
+out o, "%%1000\n";
+out o, "M47, PROJEKT.REV\n";
+out o, "M47, TT.MM.JJ\n";
+out o, "M47, T2=TESTPUNKT STANDARD(SMD)\n";
+out o, "M47, ACHTUNG: Diese Zeile löschen und am Ende erster Koordinatenzeile T2 ergänzen\n";
+
+loop (TESTPOINTS WHERE PLACED)
+
+if (#part_name# == "TP2") continue; end
+ out o, "X",#part_pos_x#,"Y",#part_pos_y#,"\n";
+
+end;
+out o, "M47\n";
+msg = " Testpunktkoordinatendatei wurde erzeugt. ";
