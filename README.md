@@ -3,7 +3,8 @@ electronic engineering stuff
 
 PCB Stuff
 ---------
-- Integra_PD2.mac //Mentor Integra Station, Pick&Place file output
+- Integra_PD2.mac              //Mentor Integra Station, Pick&Place file output
+- Integra_testpoint-output.mac //Testpoint coordinates file output
 
 License
 -------
