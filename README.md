@@ -5,6 +5,8 @@ PCB Stuff
 ---------
 - Integra_PD2.mac              //Mentor Integra Station, Pick&Place file output
 - Integra_testpoint-output.mac //Testpoint coordinates file output
+- cads2frs.awk                 //misc AWK script netlist customization
+- frp2frs.awk                  //misc AWK script netlist customization
 
 License
 -------
